@@ -3,6 +3,8 @@
 A web tool for rim weighting survey data. Upload an SPSS `.sav`, build a
 weighting scheme, and export the weights.
 
+**[Open the app](https://weightingui-for-weightipy.streamlit.app/)**
+
 ## What it does
 
 **Builds a weighting tree.** Add the variables you want to weight on and set
@@ -36,10 +38,18 @@ have changed.
 
 ## Running it
 
+The app runs at
+[weightingui-for-weightipy.streamlit.app](https://weightingui-for-weightipy.streamlit.app/).
+To run it yourself:
+
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+Either way, upload `sample_data.sav` to try it. The sample has labelled variables
+for building a tree, whole-number and decimal numerics for banding, a
+free-text variable, and both missing codes and unused value labels.
 
 ## Things worth knowing
 
