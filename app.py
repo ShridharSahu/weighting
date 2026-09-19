@@ -36,7 +36,7 @@ PCT_TOLERANCE = 0.5    # allowed drift from 100 when entering percentages
 CACHE_TTL = "2h"       # how long a parsed file may stay in the cache
 CACHE_ENTRIES = 3      # how many parsed files the process may hold at once
 
-VERSION = "v28"   # recorded in project files, not displayed
+VERSION = "v29"   # recorded in project files, not displayed
 
 ROOT = "root"
 OUTSIDE = "\u00b7outside"   # lump category for cases outside a node
@@ -242,11 +242,11 @@ def describe_variable(frame: pd.DataFrame, col: str) -> str:
         whole = float(low).is_integer() and float(high).is_integer()
         span = (f"{low:,.0f} to {high:,.0f}" if whole
                 else f"{low:,.2f} to {high:,.2f}")
-        detail = f"range {span}"
+        detail = f"Range {span}"
     elif distinct <= MAX_CATS:
         detail = f"{distinct} categories"
     else:
-        detail = f"text, {distinct:,} distinct values"
+        detail = f"Text, {distinct:,} distinct values"
 
     if missing:
         detail += f" | {missing:,} missing"
