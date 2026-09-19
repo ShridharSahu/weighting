@@ -47,10 +47,6 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Either way, upload `sample_data.sav` to try it. The sample has labelled variables
-for building a tree, whole-number and decimal numerics for banding, a
-free-text variable, and both missing codes and unused value labels.
-
 ## Things worth knowing
 
 Weighting can only reweight the respondents you have. A category with no
