@@ -1,0 +1,12 @@
+# Default appearance. Users can still switch at any time from the
+# "..." menu at the top right -> Settings -> Appearance.
+[theme]
+base = "light"
+primaryColor = "#4a6fa5"
+font = "sans serif"
+
+[theme.sidebar]
+base = "light"
+
+[browser]
+gatherUsageStats = false
