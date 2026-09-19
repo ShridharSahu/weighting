@@ -36,7 +36,7 @@ PCT_TOLERANCE = 0.5    # allowed drift from 100 when entering percentages
 CACHE_TTL = "2h"       # how long a parsed file may stay in the cache
 CACHE_ENTRIES = 3      # how many parsed files the process may hold at once
 
-VERSION = "v27"   # recorded in project files, not displayed
+VERSION = "v28"   # recorded in project files, not displayed
 
 ROOT = "root"
 OUTSIDE = "\u00b7outside"   # lump category for cases outside a node
@@ -84,6 +84,14 @@ def load_sav(file_bytes: bytes):
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.unlink(tmp_path)
+
+    # An unanswered text question comes back as an empty string rather than
+    # missing, which would otherwise show up as a category of its own.
+    for column in df.columns:
+        if df[column].dtype == object or pd.api.types.is_string_dtype(
+            df[column]
+        ):
+            df[column] = df[column].replace(r"^\s*$", None, regex=True)
 
     var_labels = {
         name: (label or "")
@@ -216,6 +224,33 @@ def categorical_vars(frame: pd.DataFrame) -> list:
 def categories_of(frame: pd.DataFrame, var: str) -> list:
     """Categories with at least one case here - the ones that can be weighted."""
     return sorted(frame[var].dropna().unique(), key=str)
+
+
+def describe_variable(frame: pd.DataFrame, col: str) -> str:
+    """A useful one-liner for the sidebar, according to what the column is.
+
+    Counting distinct values and calling them categories is misleading for
+    anything continuous or free text, so each kind gets what is actually
+    worth knowing about it.
+    """
+    column = frame[col]
+    distinct = int(column.nunique(dropna=True))
+    missing = int(column.isna().sum())
+
+    if pd.api.types.is_numeric_dtype(column) and distinct > MAX_CATS:
+        low, high = column.min(), column.max()
+        whole = float(low).is_integer() and float(high).is_integer()
+        span = (f"{low:,.0f} to {high:,.0f}" if whole
+                else f"{low:,.2f} to {high:,.2f}")
+        detail = f"range {span}"
+    elif distinct <= MAX_CATS:
+        detail = f"{distinct} categories"
+    else:
+        detail = f"text, {distinct:,} distinct values"
+
+    if missing:
+        detail += f" | {missing:,} missing"
+    return detail
 
 
 def declared_categories(labels_map: dict, frame: pd.DataFrame, var: str):
@@ -513,12 +548,11 @@ with st.sidebar:
         if shown > 200:
             st.caption("...list truncated, refine the filter")
             break
-        n_cats = df[col].nunique(dropna=True)
         ok = col in usable
         tag = "  \u00b7 derived" if col in derived_names else ""
         st.markdown(f"**{col}**{tag}" if ok else f"{col}{tag}")
         detail = f"{label} | " if label else ""
-        detail += f"{n_cats} categories"
+        detail += describe_variable(df, col)
         st.caption(detail)
 
 

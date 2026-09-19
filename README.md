@@ -172,12 +172,18 @@ data rather than the method, so it is chosen at export.
 Interlocked targets, category combining, weight capping, scheme upload, and
 `.sav` export. All additive on top of this structure.
 
+The sidebar lists every variable with what is worth knowing about it:
+categories for labelled variables, the range for continuous ones, and a
+count of distinct values for free text, plus a missing count where there is
+one. Unanswered text questions arrive as empty strings and are read as
+missing rather than becoming a category.
+
 `sample_data.sav` has gender, age band, region, urbanicity and social grade
 for building trees, plus three numeric variables for the banding tool: `age`
 (whole numbers, so inclusive bounds), and `income` and `tv_hours` (decimals,
 so exclusive upper bounds). Gender carries a user-missing code and an unused
 label, and income has 48 refusals, so the missing-data handling is visible
-too.
+too, and a free-text `comment` variable with blanks.
 
 ## Sessions and memory
 
