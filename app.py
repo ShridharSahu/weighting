@@ -36,7 +36,7 @@ PCT_TOLERANCE = 0.5    # allowed drift from 100 when entering percentages
 CACHE_TTL = "2h"       # how long a parsed file may stay in the cache
 CACHE_ENTRIES = 3      # how many parsed files the process may hold at once
 
-VERSION = "v29"   # recorded in project files, not displayed
+VERSION = "v30"   # recorded in project files, not displayed
 
 ROOT = "root"
 OUTSIDE = "\u00b7outside"   # lump category for cases outside a node
@@ -344,6 +344,12 @@ for key, default in DEFAULTS.items():
     if key not in st.session_state:
         st.session_state[key] = default
 
+# Not part of DEFAULTS: it must survive a reset, because bumping it is how
+# the uploaders are given fresh keys. Reusing a key means the widget hands
+# back the file it is still holding.
+if "upload_gen" not in st.session_state:
+    st.session_state.upload_gen = 0
+
 
 def vars_at(container_key: str) -> list:
     return list(st.session_state.vars.get(container_key, []))
@@ -494,7 +500,10 @@ st.title("Weighting")
 # The uploader is only shown until a file is loaded. Leaving it on screen
 # invites an accidental clear of a tree that took real work to build.
 if st.session_state.file_bytes is None:
-    uploaded = st.file_uploader("SPSS data file", type=["sav"])
+    uploaded = st.file_uploader(
+        "SPSS data file", type=["sav"],
+        key=f"sav_upload_{st.session_state.upload_gen}",
+    )
     if uploaded is None:
         st.info(
             "Upload a .sav file to begin. The file is held for this session "
@@ -521,12 +530,23 @@ head.caption(
 )
 if swap.button("Change file", icon=":material/swap_horiz:",
                help="Clears the tree and starts again with another file"):
+    generation = st.session_state.creator_gen
     for state_key, default in DEFAULTS.items():
         st.session_state[state_key] = (
             set() if isinstance(default, set)
             else dict(default) if isinstance(default, dict)
+            else list(default) if isinstance(default, list)
             else default
         )
+    # Widgets keep their own values under their keys, so anything left
+    # holding a variable from the old file has to be dropped and every
+    # uploader and creator control given a new key.
+    for widget_key in list(st.session_state):
+        name = str(widget_key)
+        if name.startswith(("cmb_", "bnd_", "ilk_", "creator_kind", "pick_")):
+            del st.session_state[widget_key]
+    st.session_state.creator_gen = generation + 1
+    st.session_state.upload_gen += 1
     st.rerun()
 
 
@@ -1153,7 +1173,8 @@ with st.expander("Load a project", expanded=False):
         "anything that no longer applies is reported rather than guessed at."
     )
     incoming = st.file_uploader(
-        "Project file", type=["json"], key="project_upload",
+        "Project file", type=["json"],
+        key=f"project_upload_{st.session_state.upload_gen}",
         label_visibility="collapsed",
     )
     if incoming is not None:
